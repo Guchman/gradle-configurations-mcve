@@ -21,15 +21,20 @@ abstract class CheckGwtSourcesTask : DefaultTask() {
                 }
             }
             .files
-//            .filter {  it.name.endsWith("gwt-sources.jar") } // invariants will pass if uncomment
+//            .filter { it.name.endsWith("gwt-sources.jar") } // invariants will pass if uncomment
 
         checkGwtInvariants(gwtConfigurationJars)
+
         checkOnlyNonGwt(project.configurations["runtimeClasspath"])
         checkOnlyNonGwt(project.configurations["compileClasspath"])
     }
 
     private fun checkOnlyNonGwt(configuration: Configuration) {
+        println("=== Checking ${configuration.name} sources invariants ===")
         val jars = configuration.resolve()
+        jars.forEach {
+            println("${configuration.name} dependency: ${it.name}")
+        }
         if (jars.isEmpty()) throw GradleException("Jars are empty for [${configuration.name}] configuration")
 
         val noGwtSources = jars.none {
@@ -39,12 +44,15 @@ abstract class CheckGwtSourcesTask : DefaultTask() {
     }
 
     private fun checkGwtInvariants(resolved: FileCollection) {
-        resolved.forEach {
-            println("GWT DEPENDENCY: $it")
-        }
+        val resolvedFiles = resolved.map { it.name }
+        println("=== Checking gwt sources invariants ===")
+        resolvedFiles
+            .forEach {
+                println("$GWT_COMPILE_SOURCES_DEPENDENCIES_CONFIGURATION dependency: $it")
+            }
 
-        if (resolved.map { it.name }.sorted() == listOf("lib-B-gwt-sources.jar", "lib-A-gwt-sources.jar")) {
-            throw GradleException("Not all expected GWT dependencies among ${resolved.map { it.name }}")
+        if (resolvedFiles.toList().sorted() != listOf("lib-B-gwt-sources.jar", "lib-A-gwt-sources.jar").sorted()) {
+            throw GradleException("Not all expected GWT dependencies among $resolvedFiles")
         }
     }
 }
