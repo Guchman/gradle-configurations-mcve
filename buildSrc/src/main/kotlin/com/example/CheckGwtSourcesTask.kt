@@ -43,11 +43,8 @@ abstract class CheckGwtSourcesTask : DefaultTask() {
             println("GWT DEPENDENCY: $it")
         }
 
-        if (resolved.isEmpty) {
-            throw GradleException("No GWT dependencies found")
-        }
-        if (resolved.any { !it.name.contains("gwt-sources.jar") }) {
-            throw GradleException("Not all GWT dependencies are actual gwt-sources.jar")
+        if (resolved.map { it.name }.sorted() == listOf("lib-B-gwt-sources.jar", "lib-A-gwt-sources.jar")) {
+            throw GradleException("Not all expected GWT dependencies among ${resolved.map { it.name }}")
         }
     }
 }
